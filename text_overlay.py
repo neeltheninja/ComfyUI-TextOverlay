@@ -14,7 +14,7 @@ class TextOverlay:
                 "text_color_option": (["White", "Black", "Red", "Green", "Blue"],),
                 "bg_color_option": (["Black", "White", "Red", "Green", "Blue"],),
                 "bg_opacity": ("FLOAT", {"default": 0.5, "min": 0, "max": 1, "step": 0.1}),
-            }
+            },
         }
 
     RETURN_TYPES = ("IMAGE",)
@@ -42,7 +42,7 @@ class TextOverlay:
         # Create a drawing object
         draw = ImageDraw.Draw(image_pil, 'RGBA')
 
-        # Load a font
+        # Load a font (you may need to adjust the path)
         font_size = image_pil.height // 20
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", font_size)
 
@@ -58,9 +58,15 @@ class TextOverlay:
         # Draw text
         draw.text((x, y), text, font=font, fill=self.COLOR_OPTIONS[text_color_option])
 
+        # Convert back to numpy array
+        result_np = np.array(image_pil).astype(np.float32) / 255.0
+
         # Convert back to torch tensor
-        result = torch.from_numpy(np.array(image_pil).astype(np.float32) / 255.0)
-        result = result.unsqueeze(0).permute(0, 3, 1, 2)
+        result = torch.from_numpy(result_np).unsqueeze(0)
+
+        # Ensure the result is in the correct format (B, C, H, W)
+        if result.shape[1] == 3:
+            result = result.permute(0, 3, 1, 2)
 
         return (result,)
 
