@@ -2,6 +2,7 @@ import torch
 import torchvision.transforms.functional as TF
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
+import os
 
 class TextOverlay:
     @classmethod
@@ -14,6 +15,7 @@ class TextOverlay:
                 "text_color_option": (["White", "Black", "Red", "Green", "Blue"],),
                 "bg_color_option": (["Black", "White", "Red", "Green", "Blue"],),
                 "bg_opacity": ("FLOAT", {"default": 0.5, "min": 0, "max": 1, "step": 0.1}),
+                "font_path": ("STRING", {"default": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"}),
             },
         }
 
@@ -28,7 +30,7 @@ class TextOverlay:
         "Blue": (0, 0, 255)
     }
 
-    def apply_text_overlay(self, image, text, vertical_position, text_color_option, bg_color_option, bg_opacity):
+    def apply_text_overlay(self, image, text, vertical_position, text_color_option, bg_color_option, bg_opacity, font_path):
         # Convert torch tensor to numpy array
         image_np = image.squeeze().cpu().numpy()
 
@@ -42,9 +44,13 @@ class TextOverlay:
         # Create a drawing object
         draw = ImageDraw.Draw(image_pil, 'RGBA')
 
-        # Load a font (you may need to adjust the path)
+        # Load a font
         font_size = image_pil.height // 20
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", font_size)
+        if os.path.exists(font_path):
+            font = ImageFont.truetype(font_path, font_size)
+        else:
+            print(f"Font file not found: {font_path}. Using default font.")
+            font = ImageFont.load_default()
 
         # Calculate text position
         text_width, text_height = draw.textsize(text, font=font)
