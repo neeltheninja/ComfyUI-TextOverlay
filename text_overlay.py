@@ -1,3 +1,8 @@
+import torch
+import torchvision.transforms.functional as TF
+from PIL import Image, ImageDraw, ImageFont
+import numpy as np
+
 class TextOverlay:
     @classmethod
     def INPUT_TYPES(cls):
@@ -37,10 +42,27 @@ class TextOverlay:
         # Create a drawing object
         draw = ImageDraw.Draw(image_pil, 'RGBA')
 
-        # TODO: Implement text drawing logic
+        # Load a font
+        font_size = image_pil.height // 20
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", font_size)
+
+        # Calculate text position
+        text_width, text_height = draw.textsize(text, font=font)
+        x = (image_pil.width - text_width) // 2
+        y = ((image_pil.height - text_height) // 2) + int(vertical_position * image_pil.height / 2)
+
+        # Draw background
+        bg_color = self.COLOR_OPTIONS[bg_color_option] + (int(bg_opacity * 255),)
+        draw.rectangle([x-10, y-10, x+text_width+10, y+text_height+10], fill=bg_color)
+
+        # Draw text
+        draw.text((x, y), text, font=font, fill=self.COLOR_OPTIONS[text_color_option])
 
         # Convert back to torch tensor
         result = torch.from_numpy(np.array(image_pil).astype(np.float32) / 255.0)
         result = result.unsqueeze(0).permute(0, 3, 1, 2)
 
         return (result,)
+
+NODE_CLASS_MAPPINGS = {"TextOverlay": TextOverlay}
+NODE_DISPLAY_NAME_MAPPINGS = {"TextOverlay": "Add Text Overlay"}
