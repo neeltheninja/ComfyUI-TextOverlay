@@ -10,5 +10,5 @@ Repository = "https://github.com/neeltheninja/ComfyUI-TextOverlay"
 
 [tool.comfy]
 PublisherId = "neeltheninja"
-DisplayName = "ComfyUI-TextOverlay"
+DisplayName = "ComfyUI-TextOverlayBasic"
 Icon = ""
